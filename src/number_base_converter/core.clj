@@ -1,5 +1,6 @@
 (ns number-base-converter.core
-  (:gen-class))
+  (:gen-class)
+  (:require [clojure.string :as str]))
 
 (defn digits
   [number]
@@ -10,18 +11,24 @@
             new-quo (bigint (/ quo 10N))]
         (recur new-quo (conj coll remaining))))))
 
+;Not pure nor safe at all.
+(defn parse-hex-digits
+  [hex-string]
+  (reverse (map #(read-string (str "0x" %)) (str/split hex-string #""))))
+
 (defn anybase->decimal
-  [base number]
-  (let [number-digits (digits number)]
-    (reduce 
-     + 
-     (map-indexed 
-      (fn [indx digit]
-        (* digit (Math/pow base indx)))
-      number-digits))))
+  [base number-digits]
+  (reduce 
+   + 
+   (map-indexed 
+    (fn [indx digit]
+      (* digit (Math/pow base indx))) number-digits)))
 
 (def binary->decimal
   (partial anybase->decimal 2))
 
 (def octal->decimal
   (partial anybase->decimal 8))
+
+(def hex->decimal
+  (partial anybase->decimal 16))
