@@ -16,6 +16,20 @@
   [hex-string]
   (reverse (map #(read-string (str "0x" %)) (str/split hex-string #""))))
 
+(defn decimal-digits->hex-digits
+  [decimal-digits]
+
+  (map (fn [decimal-digit]
+         (cond
+           (= decimal-digit 10) "A"
+           (= decimal-digit 11) "B"
+           (= decimal-digit 12) "C"
+           (= decimal-digit 13) "D"
+           (= decimal-digit 14) "E"
+           (= decimal-digit 15) "F"
+           :else (str decimal-digit)))
+       decimal-digits))
+
 (defn anybase->decimal
   [base number-digits]
   (reduce 
@@ -24,28 +38,11 @@
     (fn [indx digit]
       (* digit (Math/pow base indx))) number-digits)))
 
-(def binary->decimal
-  (partial anybase->decimal 2))
-
-(def octal->decimal
-  (partial anybase->decimal 8))
-
-(def hex->decimal
-  (partial anybase->decimal 16))
-
 (defn decimal->anybase
   [base decimal-number]
-  (loop [quo decimal-number digits []]
+  (loop [quo (int decimal-number) digits []]
     (if (< quo base)
       (conj digits quo)
       (recur (int (/ quo base)) 
              (conj digits (rem quo base))))))
 
-(def decimal->binary
-  (partial decimal->anybase 2))
-
-(def decimal->octal
-  (partial decimal->anybase 8))
-
-(def decimal->hex
-  (partial decimal->anybase 16))

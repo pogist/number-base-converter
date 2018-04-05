@@ -4,6 +4,6 @@
   :license {:name "The MIT License (MIT)"
             :url "https://mit-license.org/"}
   :dependencies [[org.clojure/clojure "1.8.0"]]
-  :main ^:skip-aot number-base-converter.core
+  :main ^:skip-aot number-base-converter.main
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
