@@ -29,3 +29,15 @@
     (testing "With an hexadecimal number."
       (let [decimal-number (core/anybase->decimal 16 (core/parse-hex-digits "1abc"))]
         (is (= decimal-number 6844.0))))))
+
+(deftest decimal->anybase
+  (testing "Conversion of number on decimal base to any base (with reversed digits)."
+    
+    (testing "To binary base."
+      (is (= [0 1 0 1] (core/decimal->anybase 2 10))))
+    
+    (testing "To octal base."
+      (is (= [2 1] (core/decimal->anybase 8 10))))
+    
+    (testing "To hexadecimal base."
+      (is (= [13 1] (core/decimal->anybase 16 29))))))

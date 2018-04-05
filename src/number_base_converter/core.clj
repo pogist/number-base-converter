@@ -32,3 +32,20 @@
 
 (def hex->decimal
   (partial anybase->decimal 16))
+
+(defn decimal->anybase
+  [base decimal-number]
+  (loop [quo decimal-number digits []]
+    (if (< quo base)
+      (conj digits quo)
+      (recur (int (/ quo base)) 
+             (conj digits (rem quo base))))))
+
+(def decimal->binary
+  (partial decimal->anybase 2))
+
+(def decimal->octal
+  (partial decimal->anybase 8))
+
+(def decimal->hex
+  (partial decimal->anybase 16))
