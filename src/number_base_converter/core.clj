@@ -2,47 +2,56 @@
   (:gen-class)
   (:require [clojure.string :as str]))
 
-(defn digits
-  [number]
-  (loop [quo number coll []]
-    (if (= quo 0N)
-      coll
-      (let [remaining (rem quo 10N)
-            new-quo (bigint (/ quo 10N))]
-        (recur new-quo (conj coll remaining))))))
+(defmulti digits
+  (fn [based-number]
+    (:base based-number)))
 
-;Not pure nor safe at all.
-(defn parse-hex-digits
-  [hex-string]
+(defmethod digits :default
+  [{_ :base number :value}]
+  (loop [quotient number digits-coll []]
+    (if (= quotient 0N)
+      digits-coll
+      (recur (bigint (/ quotient 10N))
+             (conj digits-coll (rem quotient 10N))))))
+
+(defmethod digits 16
+  [{_ :base hex-string :value}]
   (reverse (map #(read-string (str "0x" %)) (str/split hex-string #""))))
 
-(defn decimal-digits->hex-digits
-  [decimal-digits]
+(defn- char-range 
+  [start end]
+  (map char (range (int start) (int end))))
 
-  (map (fn [decimal-digit]
-         (cond
-           (= decimal-digit 10) "A"
-           (= decimal-digit 11) "B"
-           (= decimal-digit 12) "C"
-           (= decimal-digit 13) "D"
-           (= decimal-digit 14) "E"
-           (= decimal-digit 15) "F"
-           :else (str decimal-digit)))
-       decimal-digits))
+(def hex-digits
+  (into 
+   {}
+   (map (fn [digit char] [digit char])
+        (range 10 16)
+        (char-range \A \G))))
 
-(defn anybase->decimal
-  [base number-digits]
-  (reduce 
-   + 
-   (map-indexed 
-    (fn [indx digit]
-      (* digit (Math/pow base indx))) number-digits)))
+(defn ->str
+  [digit]
+  (if (< digit 10)
+    (str digit)
+    (str (get hex-digits digit))))
+
+(defn digits->str
+  [digits]
+  (reduce str (map ->str digits)))
+
+(defn ->decimal
+  [{base :base value :value}]
+  (let [digits (digits value)]
+    (reduce + (map-indexed
+               (fn [index digit]
+                 (* digit (Math/pow base index))) 
+               digits))))
 
 (defn decimal->anybase
   [base decimal-number]
-  (loop [quo (int decimal-number) digits []]
-    (if (< quo base)
-      (conj digits quo)
-      (recur (int (/ quo base)) 
-             (conj digits (rem quo base))))))
+  (loop [quotient (int decimal-number) digits []]
+    (if (< quotient base)
+      (conj digits quotient)
+      (recur (int (/ quotient base)) 
+             (conj digits (rem quotient base))))))
 
