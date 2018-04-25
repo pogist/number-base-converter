@@ -1,59 +1,21 @@
 (ns number-base-converter.main
   (:gen-class)
   (:require [number-base-converter.core :refer :all]
+            [number-base-converter.input-utils :as in]
             [clojure.string :as str]))
 
-(defn- option->base
-  [option]
-  (cond
-    (= option "1") 2
-    (= option "2") 8
-    (= option "3") 10
-    (= option "4") 16))
+(defmacro defoption
+  [name option-number value text]
+  `(let [prompt# (str ~option-number ") " ~text)]
+     (def ~name {:option ~option-number :value ~value :prompt prompt#})))
 
-(defn- base->digits-fn
-  [base]
-  (if (= base 16)
-    parse-hex-digits
-    digits))
+(defoption binary  1 2  "Binary")
+(defoption octal   2 8  "Octal")
+(defoption decimal 3 10 "Decimal")
+(defoption hex     4 16 "Hexadecimal")
 
-(defn- parse-input-for-base
-  [base raw-input]
-  (if (not= base 16)
-    (Integer. raw-input)
-    raw-input))
+(defn present-options
+  [options]
+  (doseq [option options]
+    (println (:prompt option))))
 
-(defn- parse-partial-result-for-base
-  [base partial-result]
-  (if (= base 16)
-    (decimal-digits->hex-digits partial-result)
-    partial-result))
-
-(defn -main
-  []
-  (do 
-    (println "From which base would you like to convert? \n\n1) Binary\n2) Octal\n3) Decimal\n4) Hexadecimal\n")
-    (print "Base: ")
-    (flush)
-
-    (let [origin-base (option->base (read-line))]
-      (println "To which base would you like to go? \n\n1) Binary\n2) Octal\n3) Decimal\n4) Hexadecimal\n")
-      (print "Base: ")
-      (flush)
-
-      (let [destination-base (option->base (read-line))
-            conversion-function (comp (partial decimal->anybase destination-base)
-                                      (partial anybase->decimal origin-base))]
-        (print "The number you want to convert: ")
-        (flush)
-        
-        (let [raw-input (read-line)
-              digits-fn (base->digits-fn origin-base)
-              parsed-number (parse-input-for-base origin-base raw-input)
-              partial-result (conversion-function (digits-fn parsed-number))
-              final-result (parse-partial-result-for-base destination-base partial-result)]
-          
-          (println (str "\nResult: "
-                        (->> (reverse final-result)
-                             (map str)
-                             (str/join)))))))))
